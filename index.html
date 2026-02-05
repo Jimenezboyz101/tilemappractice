@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NYC Collision Analysis Map</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+
+    #info-panel {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0);
+      max-width: 300px;
+      z-index: 1;
+    }
+
+    #info-panel h1 {
+      margin: 0 0 6px 0;
+      font-size: 18px;
+    }
+
+    #info-panel p {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    #layer-control {
+      position: absolute;
+      top: 170px;
+      left: 15px;
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0);
+      z-index: 1;
+      font-size: 13px;
+    }
+
+    #layer-control label {
+      display: block;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="info-panel">
+  <h1>NYC Traffic Collision Analysis</h1>
+  <p>
+    This project visualizes vehicle collisions throughout the city of
+    New York. You can view the initial single point collision data I started
+    with, and then view the kernel density map I created to analyze the hot
+    spots for collisions around the city.
+  </p>
+</div>
+
+<div id="layer-control">
+  <strong>Layers</strong>
+  <label><input type="checkbox" id="basemap" checked> Custom Basemap</label>
+  <label><input type="checkbox" id="collisions"> Raw Collision Data</label>
+  <label><input type="checkbox" id="collisions-on-map"> Collisions on Basemap</label>
+  <label><input type="checkbox" id="analysis"> Collision Analysis</label>
+</div>
+
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1Ijoib3N3YWxkb2ppbWVuZXoiLCJhIjoiY21reGJqc3NkMDhxbTNqcHh4OGNlYm94OSJ9.OKsd-KUnhUT0HP-tWB8Yqg';
+
+  const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v11',
+    center: [-74, 40.7128],
+    zoom: 10
+  });
+
+  map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+  map.addControl(new mapboxgl.ScaleControl({
+    maxWidth: 100,
+    unit: 'imperial'
+  }));
+
+  map.on('load', () => {
+
+    map.addSource('basemap-tiles', {
+      type: 'raster',
+      tiles: ['assets/mapbox_baselayer/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: 'Map tiles designed by Oswaldo Jimenez'
+    });
+
+    map.addSource('collisions-tiles', {
+      type: 'raster',
+      tiles: ['assets/NY_Collisions/{z}/{x}/{y}.png'],
+      tileSize: 256
+    });
+
+    map.addSource('collisions-on-map-tiles', {
+      type: 'raster',
+      tiles: ['assets/Collisions_on_Basemap/{z}/{x}/{y}.png'],
+      tileSize: 256
+    });
+
+    map.addSource('analysis-tiles', {
+      type: 'raster',
+      tiles: ['assets/Collision_Analysis/{z}/{x}/{y}.png'],
+      tileSize: 256
+    });
+
+    map.addLayer({
+      id: 'basemap-layer',
+      type: 'raster',
+      source: 'basemap-tiles',
+      layout: { visibility: 'visible' }
+    });
+
+    map.addLayer({
+      id: 'collisions-layer',
+      type: 'raster',
+      source: 'collisions-tiles',
+      layout: { visibility: 'none' }
+    });
+
+    map.addLayer({
+      id: 'collisions-on-map-layer',
+      type: 'raster',
+      source: 'collisions-on-map-tiles',
+      layout: { visibility: 'none' }
+    });
+
+    map.addLayer({
+      id: 'analysis-layer',
+      type: 'raster',
+      source: 'analysis-tiles',
+      layout: { visibility: 'none' }
+    });
+
+    function toggleLayer(checkboxId, layerId) {
+      document.getElementById(checkboxId).addEventListener('change', (e) => {
+        map.setLayoutProperty(
+          layerId,
+          'visibility',
+          e.target.checked ? 'visible' : 'none'
+        );
+      });
+    }
+
+    toggleLayer('basemap', 'basemap-layer');
+    toggleLayer('collisions', 'collisions-layer');
+    toggleLayer('collisions-on-map', 'collisions-on-map-layer');
+    toggleLayer('analysis', 'analysis-layer');
+  });
+</script>
+
+</body>
+</html>
