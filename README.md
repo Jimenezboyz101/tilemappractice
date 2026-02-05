@@ -1,7 +1,7 @@
 # New York Vehicle Collisions (Tilemaps)
 
 ## Web Map URL
-**Link to the web map:**
+**Link to the web map: https://jimenezboyz101.github.io/tilemappractice/**
 
 ---
 
